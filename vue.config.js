@@ -29,15 +29,34 @@ module.exports = {
   // see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
   // 如果你不需要使用eslint，把lintOnSave设为false即可
   lintOnSave: true,
+  // The directory where the production build files will be generated in when running vue-cli-service build
+  // Default 'dist'
+  outputDir: '../webapp',
+  // A directory (relative to outputDir) to nest generated static assets (js, css, img, fonts) under.
+  // Default ''
+  assetsDir: 'static',
   chainWebpack: config => {
     config.resolve.alias
       .set('@', resolve('src')) // key,value自行定义，比如.set('@@', resolve('src/components'))
       .set('_c', resolve('src/components'))
+    config
+      .when(process.env.NODE_ENV === 'production', config => {
+        config
+          .plugin('clean') // clean自行定义，禁用build clean
+          .use(require('clean-webpack-plugin'), [['static/', 'index.html', 'favicon.ico'],
+            {root: path.resolve(__dirname, '../webapp/')}])
+      })
   },
   // 设为false打包时不生成.map文件
   productionSourceMap: false
   // 这里写你调用接口的基础路径，来解决跨域，如果设置了代理，那你本地开发环境的axios的baseUrl要写为 '' ，即空字符串
-  // devServer: {
-  //   proxy: 'localhost:3000'
-  // }
+  devServer: {
+    host: 'open.console.biyao.com',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8081',
+        pathRewrite: {'^/api': ''}
+      }
+    }
+  }
 }
